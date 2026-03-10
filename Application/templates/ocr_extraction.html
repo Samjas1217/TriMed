@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCR Extraction | Trimed Technologies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: linear-gradient(180deg, #ffffff, #f9fbfd);
+    height: 100vh;
+    padding: 25px;
+    border-right: 1px solid #ddd;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.sidebar h2 {
+    color: #0a66c2;
+    margin-bottom: 40px;
+    font-size: 1.4rem;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    font-weight: 500;
+}
+
+.sidebar ul li:hover {
+    background: #e8f1fb;
+    transform: translateX(5px);
+}
+
+.sidebar ul li:hover a {
+    color: #0a66c2;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 40px;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(15px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2rem;
+    color: #222;
+    border-left: 5px solid #0a66c2;
+    padding-left: 10px;
+}
+
+/* Card */
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    max-width: 850px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card h2 {
+    margin-bottom: 20px;
+    color: #0a66c2;
+    font-size: 1.3rem;
+}
+
+
+button {
+    padding: 12px 24px;
+    background: #0a66c2;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #084c99;
+    box-shadow: 0 4px 12px rgba(10,102,194,0.3);
+    transform: scale(1.05);
+}
+
+/* Preview */
+.preview img {
+    max-width: 100%;
+    margin-top: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.preview img:hover {
+    transform: scale(1.02);
+}
+
+/* Textarea */
+textarea {
+    width: 100%;
+    height: 220px;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    resize: none;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: border 0.3s ease;
+}
+
+textarea:focus {
+    border: 1px solid #0a66c2;
+    outline: none;
+    box-shadow: 0 0 6px rgba(10,102,194,0.3);
+}
+
+.split-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.image-section, .text-section {
+    flex: 1;
+    min-width: 300px;
+}
+
+.loading {
+    font-size: 0.95rem;
+    color: #0a66c2;
+    margin-bottom: 10px;
+    font-weight: 500;
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0% {opacity: 0.3;}
+    50% {opacity: 1;}
+    100% {opacity: 0.3;}
+}
+
+textarea {
+    height: 280px;
+}
+
+.link-section {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.link-btn {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.link-btn:hover {
+    background: linear-gradient(135deg, #219150, #27ae60);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>TriMed's Patient Linking</h2>
+    <ul>
+        <li><a href="/dashboard">📤 Change Fax</a></li>
+        <li><a href="#" onclick="logout()">🔒 Logout</a></li>
+    </ul>
+</div>
+
+<div class="main">
+    <div class="header">
+        <h1>Fax Text Extraction</h1>
+    </div>
+
+    <div class="card">
+
+        <div class="split-container">
+
+            <div class="image-section">
+                <h3>Extracted Image</h3>
+                <div class="preview">
+                    <img src="/output_images/{{ image_filename }}">
+                </div>
+            </div>
+
+            <div class="text-section">
+                <h3>Extracted Text</h3>
+
+                <div id="loading" class="loading">
+                    ⏳ Processing OCR...
+                </div>
+
+                <textarea id="result" placeholder="Extracted text will appear here..." readonly></textarea>
+
+                <div class="link-section">
+                 <button class="link-btn" onclick="linkToPatient()"> 🔗 Link to Patient </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+function logout() {
+    fetch("/logout", {
+        method: "POST",
+        credentials: "include"
+    }).then(() => {
+        window.location.replace("/login");
+    });
+}
+
+// Auto OCR on page load
+window.addEventListener("DOMContentLoaded", function () {
+
+    const loading = document.getElementById("loading");
+    const resultBox = document.getElementById("result");
+
+    fetch("/extract_text", {
+        method: "POST",
+        credentials: "include"
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        loading.style.display = "none";
+
+        if (data.status === "success") {
+            resultBox.value = data.extracted_text;
+        } else {
+            resultBox.value = "OCR Failed.";
+        }
+    })
+    .catch(() => {
+        loading.style.display = "none";
+        resultBox.value = "Error during OCR.";
+    });
+
+});
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login | Trimed Technologies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                        url('https://images.unsplash.com/photo-1580281657521-8b0a1c0a6c5c');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            width: 400px;
+            border-radius: 12px;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 10px;
+            color: #0a66c2;
+        }
+
+        .login-container p {
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0a66c2;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #0a66c2;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #084c99;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .company-name {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .back-link {
+            margin-top: 15px;
+            display: block;
+            font-size: 14px;
+            color: #0a66c2;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media(max-width: 500px){
+            .login-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="company-name">
+    Trimed Technologies
+</div>
+
+<div class="login-container">
+    <h2>Admin Portal</h2>
+    <p>Secure access for system administrators</p>
+
+    <input type="email" id="email" placeholder="Admin Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="adminLogin()">Login</button>
+
+    <div class="error" id="error"></div>
+
+    <a href="landing.html" class="back-link">← Back to Home</a>
+</div>
+
+<script>
+function adminLogin() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    fetch("http://127.0.0.1:5000/api/adminlogin", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Invalid credentials");
+        return res.json();
+    })
+    .then(data => {
+        window.location.href = "/admindash";
+    })
+    .catch(err => {
+        document.getElementById("error").innerText = "Invalid Email or Password";
+    });
+}
+</script>
+
+</body>
+</html>

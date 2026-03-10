@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hospital Staff Login</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #ACB6E5); 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden; 
+    }
+
+    #particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .login-box {
+      position: relative;
+      z-index: 1;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 15px;
+      width: 380px;
+      box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    input {
+      width: 93%;
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #74ebd5;
+      box-shadow: 0 0 8px rgba(116,235,213,0.6);
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #74ebd5, #3498db);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #3498db, #1f5f8b);
+      transform: scale(1.05);
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="login-box">
+  <h2>Hospital Staff Login</h2>
+
+  <input type="text" id="employee_id" placeholder="Employee ID">
+  <input type="password" id="password" placeholder="Password">
+
+  <button id="loginBtn" onclick="login()">Login</button>
+
+  <p class="error" id="error"></p>
+</div>
+
+<script>
+  
+  const canvas = document.getElementById("particles");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let particlesArray = [];
+
+  class Particle {
+    constructor(x, y, size, speedX, speedY, color) {
+      this.x = x;
+      this.y = y;
+      this.size = size;
+      this.speedX = speedX;
+      this.speedY = speedY;
+      this.color = color;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+
+     
+      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    }
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function randomColor() {
+    const colors = [
+      "rgba(116,235,213,0.8)",
+      "rgba(52,152,219,0.8)",
+      "rgba(255,255,255,0.7)",
+      "rgba(173,216,230,0.8)"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function init() {
+    particlesArray = [];
+    for (let i = 0; i < 100; i++) {
+      let x = Math.random() * canvas.width;
+      let y = Math.random() * canvas.height;
+      let size = Math.random() * 4 + 2;
+      let speedX = Math.random() * 1 - 0.5;
+      let speedY = Math.random() * 1 - 0.5;
+      let color = randomColor();
+      particlesArray.push(new Particle(x, y, size, speedX, speedY, color));
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particlesArray.length; i++) {
+      particlesArray[i].update();
+      particlesArray[i].draw();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  init();
+  animate();
+
+  window.addEventListener("resize", function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    init();
+  });
+
+  
+  function login() {
+    const employee_id = document.getElementById("employee_id").value;
+    const password = document.getElementById("password").value;
+    const loginBtn = document.getElementById("loginBtn");
+
+    
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<div class="spinner"></div>';
+
+    fetch("/api/login", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        employee_id: employee_id,
+        password: password
+      })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Invalid credentials");
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === "success") {
+          window.location.href = "/dashboard";
+        }
+      })
+      .catch(error => {
+        document.getElementById("error").innerText =
+          "Invalid Employee ID or Password";
+        loginBtn.disabled = false;
+        loginBtn.innerText = "Login";
+      });
+  }
+</script>
+</body>
+</html>

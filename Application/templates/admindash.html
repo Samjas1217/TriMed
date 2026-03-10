@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard | Trimed Technologies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    display:flex;
+}
+
+
+.sidebar{
+    width:240px;
+    background:#ffffff;
+    height:100vh;
+    padding:20px;
+    border-right:1px solid #e0e0e0;
+}
+
+.sidebar h2{
+    color:#0a66c2;
+    margin-bottom:40px;
+}
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar ul li{
+    padding:12px 10px;
+    margin-bottom:10px;
+    border-radius:6px;
+    cursor:pointer;
+    color:#555;
+    transition:0.3s;
+}
+
+.sidebar ul li:hover{
+    background:#e8f1fb;
+    color:#0a66c2;
+}
+
+.main{
+    flex:1;
+    padding:30px;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.header h1{
+    color:#333;
+}
+
+.logout-btn{
+    padding:8px 15px;
+    background:#0a66c2;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+/* CARD */
+.card{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0px 4px 20px rgba(0,0,0,0.05);
+    max-width:700px;
+}
+
+.card h2{
+    margin-bottom:20px;
+    color:#0a66c2;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:500;
+}
+
+.form-group input, .form-group select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button.submit-btn{
+    margin-top:10px;
+    padding:10px 20px;
+    background:#0a66c2;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.success{
+    color:green;
+    margin-top:10px;
+}
+
+.error{
+    color:red;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+
+<div class="sidebar">
+    <h2>Trimed Admin</h2>
+    <ul>
+        <li>Add Staff</li>
+        <li>Staff Management</li>
+        <li>View Patients</li>
+        <li>System Logs</li>
+    </ul>
+</div>
+
+
+<div class="main">
+
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="card">
+        <h2>Add New Staff</h2>
+
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="name">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email">
+        </div>
+
+        <div class="form-group">
+            <label>Role</label>
+            <select id="role">
+                <option>DataManager</option>
+                <option>Receptionist</option>
+                <option>Doctor</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="department">
+        </div>
+
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="text" id="phone">
+        </div>
+
+        <div class="form-group">
+            <label>Employee ID</label>
+            <input type="text" id="employee_id">
+        </div>
+
+        <button class="submit-btn" onclick="addStaff()">Create Staff</button>
+
+        <div class="success" id="success"></div>
+        <div class="error" id="error"></div>
+    </div>
+
+</div>
+
+<script>
+
+function generatePassword(name, empId){
+    let firstLetter = name.charAt(0).toUpperCase();
+    let digits = empId.slice(-3);
+    return firstLetter + digits;
+}
+
+function addStaff(){
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const role = document.getElementById("role").value;
+    const department = document.getElementById("department").value;
+    const phone = document.getElementById("phone").value;
+    const employee_id = document.getElementById("employee_id").value;
+
+    if(!name || !email || !employee_id){
+        document.getElementById("error").innerText = "Please fill required fields";
+        return;
+    }
+
+    const password = generatePassword(name, employee_id);
+
+    fetch("http://127.0.0.1:5000/add_staff",{
+        method:"POST",
+        credentials:"include",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            name,
+            email,
+            password,
+            role,
+            department,
+            phone,
+            employee_id
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.status==="success"){
+            document.getElementById("success").innerText =
+                "Staff added successfully! Generated Password: " + password;
+            document.getElementById("error").innerText = "";
+        }else{
+            document.getElementById("error").innerText = data.message;
+        }
+    })
+}
+
+function logout(){
+    fetch("http://127.0.0.1:5000/logout",{
+        method:"POST",
+        credentials:"include"
+    }).then(()=>{
+        window.location.href="adminlogin.html";
+    });
+}
+
+</script>
+
+</body>
+</html>

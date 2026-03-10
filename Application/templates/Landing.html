@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trimed Technologies | AI Fax Patient Linking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f4f8fb;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        nav {
+            background: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        nav h1 {
+            color: #0a66c2;
+            font-size: 22px;
+        }
+
+        nav .buttons button {
+            margin-left: 10px;
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .login-btn {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .admin-btn {
+            background: #16a085;
+            color: white;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 80px 10%;
+            background: linear-gradient(to right, #e3f2fd, #ffffff);
+        }
+
+        .hero-text {
+            width: 50%;
+        }
+
+        .hero-text h2 {
+            font-size: 40px;
+            margin-bottom: 20px;
+            color: #0a66c2;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .hero-text button {
+            padding: 12px 25px;
+            background: #0a66c2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .hero img {
+            width: 45%;
+            border-radius: 10px;
+        }
+
+        /* SECTION */
+        section {
+            padding: 60px 10%;
+            text-align: center;
+        }
+
+        section h2 {
+            margin-bottom: 20px;
+            color: #0a66c2;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+        }
+
+        .feature-box {
+            width: 30%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.05);
+        }
+
+        .feature-box img {
+            width: 80px;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            background: #0a66c2;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media(max-width: 900px){
+            .hero {
+                flex-direction: column;
+            }
+
+            .hero-text, .hero img {
+                width: 100%;
+            }
+
+            .features {
+                flex-direction: column;
+            }
+
+            .feature-box {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+<nav>
+    <h1>Trimed Technologies</h1>
+    <div class="buttons">
+        <button class="login-btn" onclick="goToLogin()">Staff Login</button>
+        <button class="admin-btn" onclick="goToAdmin()">Admin</button>
+    </div>
+</nav>
+
+
+<div class="hero">
+    <div class="hero-text">
+        <h2>AI-Based Patient Fax Linking System</h2>
+        <p>
+            Automating patient identification from inbound fax documents using
+            advanced OCR and AI-based extraction technologies.
+            Improve efficiency, reduce manual workload, and enhance accuracy.
+        </p>
+        <button onclick="goToLogin()">Access System</button>
+    </div>
+    <img src="https://www.news-medical.net/images/Article_Images/ImageForArticle_24532_17066301121638048.jpg" alt="Healthcare AI">
+</div>
+
+
+<section>
+    <h2>About Trimed Technologies</h2>
+    <p>
+        Trimed Technologies is a healthcare-focused AI solutions provider
+        dedicated to building secure, intelligent, and efficient systems
+        for modern hospitals and medical institutions.
+        We specialize in AI automation, healthcare data systems,
+        and secure digital transformation.
+    </p>
+</section>
+
+
+<section style="background:#e3f2fd;">
+    <h2>We Provide You</h2>
+    <p>
+        This system extracts patient information from fax documents
+        using Optical Character Recognition (OCR) and Natural Language Processing (NLP).
+        It automatically matches extracted data with hospital records,
+        reducing human error and improving workflow efficiency.
+    </p>
+</section>
+
+
+<section>
+    <h2>Core Features</h2>
+    <div class="features">
+
+        <div class="feature-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/2913/2913108.png">
+            <h3>AI OCR Processing</h3>
+            <p>Extracts patient details from fax documents automatically.</p>
+        </div>
+
+        <div class="feature-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+            <h3>Smart Patient Matching</h3>
+            <p>Matches extracted data with existing patient database.</p>
+        </div>
+
+        <div class="feature-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+            <h3>Secure Access</h3>
+            <p>Login-protected system with session management.</p>
+        </div>
+
+    </div>
+</section>
+
+
+<footer>
+    © 2026 Trimed Technologies | Healthcare AI Solutions
+</footer>
+
+<script>
+function goToLogin(){
+    window.location.href = "/login";
+}
+
+function goToAdmin(){
+    window.location.href = "/adminlogin";
+}
+</script>
+
+</body>
+</html>
