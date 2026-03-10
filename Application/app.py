@@ -13,6 +13,9 @@ import os
 import uuid
 from patient_extractor import extract_patient_info
 from ocr_utils import extract_text_from_image
+from patient_matcher import find_matching_patient
+from document_classifier import DocumentClassifier
+from duplicate_detector import detect_duplicates
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -26,7 +29,7 @@ def add_no_cache_headers(response):
     return response
 
 client = MongoClient("mongodb://localhost:27017/")
-db = client["hospitalDB"]
+db = client["faxDB"]
 admin_collection = db["admin"]
 staff_collection = db["staff"]
 uploads_collection = db["uploads"]
@@ -83,6 +86,21 @@ def admin_login():
 @app.route("/")
 def index():
     return render_template("Landing.html")
+
+@app.route("/patient_timeline/<patient_id>")
+def patient_timeline(patient_id):
+
+    if "staff_id" not in session:
+        return redirect("/login")
+
+    documents = list(uploads_collection.find({
+        "matched_patient_id": patient_id
+    }).sort("uploaded_at",-1))
+
+    return render_template(
+        "timeline.html",
+        documents=documents
+    )
 
 @app.route("/login", methods=["GET"])
 def login_page():
@@ -142,23 +160,60 @@ def extract_text():
     custom_config = r'--oem 3 --psm 6'
     ocr_text = extract_text_from_image(image_path)
 
-    patient_data = extract_patient_info(ocr_text)
+    # AI document classification
+    classifier = DocumentClassifier()
+    document_type = classifier.run(ocr_text)
+    patient_data = extract_patient_info(ocr_text)   
+        # Patient matching
+    matched_patient, confidence = find_matching_patient(patient_data)
 
+    if matched_patient and confidence > 85:
+        patient_status = "existing"
+        patient_id = str(matched_patient["_id"])
+    else:
+        patient_status = "new"
+
+        new_patient = {
+        "first_name": patient_data.get("first_name"),
+        "last_name": patient_data.get("last_name"),
+        "date_of_birth": patient_data.get("date_of_birth"),
+        "created_at": datetime.utcnow()
+        }
+
+        result = db["patients"].insert_one(new_patient)
+        patient_id = str(result.inserted_id)
+
+        # Check duplicates
+        duplicates = detect_duplicates(new_patient)
+
+        if duplicates:
+            db["duplicates"].insert_one({
+            "new_patient_id": patient_id,
+            "possible_matches": duplicates,
+            "created_at": datetime.utcnow()
+        })
     # Update MongoDB document
     uploads_collection.update_one(
-        {"_id": ObjectId(upload_id)},
-        {"$set": {
-            "ocr_text": ocr_text,
-            "patient_data": patient_data,
-            "ocr_completed_at": datetime.utcnow()
-        }}
+    {"_id": ObjectId(upload_id)},
+    {"$set": {
+        "ocr_text": ocr_text,
+        "patient_data": patient_data,
+        "document_type": document_type,
+        "matched_patient_id": patient_id,
+        "match_confidence": confidence,
+        "patient_status": patient_status,
+        "ocr_completed_at": datetime.utcnow()
+    }}
     )
 
     return jsonify({
-        "status": "success",
-        "extracted_text": ocr_text,
-        "patient_data": patient_data
-    })
+    "status": "success",
+    "extracted_text": ocr_text,
+    "patient_data": patient_data,
+    "document_type": document_type,
+    "patient_status": patient_status,
+    "match_confidence": confidence
+})
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -215,13 +270,12 @@ def upload_file():
         return jsonify({"success": False, "error": "Only PDF allowed"})
 
     try:
+
         unique_id = str(uuid.uuid4())
 
-        # Save PDF
         pdf_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}.pdf")
         file.save(pdf_path)
 
-        # Extract first page
         pages = convert_from_path(
             pdf_path,
             dpi=300,
@@ -237,20 +291,18 @@ def upload_file():
 
         pages[0].save(extracted_image_path, "JPEG")
 
-        # PREPROCESSING
-
+        # preprocessing
         image = cv2.imread(extracted_image_path)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         denoised = cv2.medianBlur(gray, 3)
 
-        _, thresh = cv2.threshold(
-            denoised, 150, 255, cv2.THRESH_BINARY
-        )
+        _, thresh = cv2.threshold(denoised,150,255,cv2.THRESH_BINARY)
 
         coords = np.column_stack(np.where(thresh > 0))
 
         if len(coords) > 0:
             angle = cv2.minAreaRect(coords)[-1]
+
             if angle < -45:
                 angle = -(90 + angle)
             else:
@@ -258,6 +310,7 @@ def upload_file():
 
             (h, w) = thresh.shape[:2]
             center = (w // 2, h // 2)
+
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
 
             deskewed = cv2.warpAffine(
@@ -277,8 +330,6 @@ def upload_file():
 
         cv2.imwrite(processed_image_path, deskewed)
 
-        # Save to MongoDB
-
         result = uploads_collection.insert_one({
             "staff_id": session["staff_id"],
             "pdf_path": pdf_path,
@@ -287,23 +338,21 @@ def upload_file():
             "ocr_text": None,
             "uploaded_at": datetime.utcnow()
         })
+
         session["last_upload_id"] = str(result.inserted_id)
         session["last_processed_image"] = processed_image_path
-
 
         filename = os.path.basename(processed_image_path)
 
         return jsonify({
-           "success": True,
-           "image_filename": filename
+            "success": True,
+            "image_filename": filename
         })
-
 
     except Exception as e:
         return jsonify({
             "success": False,
             "error": str(e)
         })
-
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,5 +1,5 @@
 import re
-
+from ai_patient_agent import PatientInfoAgent
 def extract_patient_info(ocr_text):
 
     data = {
@@ -78,5 +78,21 @@ def extract_patient_info(ocr_text):
     match = re.search(r'Email\s*ID\s*:\s*(.+)', text, re.IGNORECASE)
     if match:
         data["email"] = match.group(1).strip()
+    
+    # If important fields missing → use AI
+    if not data["first_name"] or not data["date_of_birth"]:
+
+        try:
+            agent = PatientInfoAgent()
+
+            ai_result = agent.run(text)
+
+            if isinstance(ai_result, dict):
+                for key in data:
+                    if not data[key] and key in ai_result:
+                        data[key] = ai_result[key]
+
+        except Exception as e:
+            print("AI extraction failed:", e)
 
     return data
