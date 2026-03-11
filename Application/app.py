@@ -13,6 +13,7 @@ import os
 import uuid
 from patient_extractor import extract_patient_info
 from ocr_utils import extract_text_from_image
+from patient_matching import match_patient
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -142,7 +143,18 @@ def extract_text():
     custom_config = r'--oem 3 --psm 6'
     ocr_text = extract_text_from_image(image_path)
 
+    # Extract patient info
     patient_data = extract_patient_info(ocr_text)
+
+    matching_data = {
+    "name": f"{patient_data['first_name']} {patient_data['last_name']}",
+    "dob": patient_data["date_of_birth"],
+    "mrn": patient_data["patient_id"]
+}
+
+    # Run patient matching
+    match_result = match_patient(matching_data)
+    print("Patient Match Result:", match_result)
 
     # Update MongoDB document
     uploads_collection.update_one(
@@ -150,9 +162,11 @@ def extract_text():
         {"$set": {
             "ocr_text": ocr_text,
             "patient_data": patient_data,
+            "match_result": match_result,
             "ocr_completed_at": datetime.utcnow()
         }}
     )
+    print("MATCHING DATA:", matching_data)
 
     return jsonify({
         "status": "success",
@@ -290,6 +304,7 @@ def upload_file():
         session["last_upload_id"] = str(result.inserted_id)
         session["last_processed_image"] = processed_image_path
 
+       
 
         filename = os.path.basename(processed_image_path)
 
