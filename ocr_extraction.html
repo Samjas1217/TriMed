@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>AI Fax Processing</title>
+
+<style>
+
+body{
+font-family:'Segoe UI';
+background:#f4f6f9;
+padding:40px;
+}
+
+h2{
+margin-bottom:20px;
+color:#0a66c2;
+}
+
+.container{
+display:flex;
+gap:40px;
+align-items:flex-start;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+.image-card img{
+width:420px;
+border-radius:10px;
+}
+
+textarea{
+width:520px;
+height:260px;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+resize:none;
+}
+
+.status{
+margin-top:10px;
+font-weight:bold;
+}
+
+.patient-box{
+margin-top:20px;
+background:#eef5ff;
+padding:15px;
+border-radius:8px;
+}
+
+button{
+padding:10px 20px;
+margin-top:15px;
+background:#0a66c2;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-right:10px;
+}
+
+button:hover{
+background:#084c99;
+}
+
+.loading{
+color:#555;
+font-style:italic;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>AI Fax Processing</h2>
+
+<div class="container">
+
+<div class="card image-card">
+
+<h3>Fax Image</h3>
+
+<img src="/processed/{{ image_filename }}">
+
+</div>
+
+<div class="card">
+
+<h3>OCR Extracted Text</h3>
+
+<textarea id="ocrText" readonly>Processing OCR...</textarea>
+
+<div id="status" class="status loading">
+Running AI extraction...
+</div>
+
+<p><b>Document Type:</b> <span id="doc_type">-</span></p>
+
+<p>OCR Confidence: <span id="ocr_conf">0</span>%</p>
+<p>Extraction Confidence: <span id="extract_conf">0</span>%</p>
+<p>Duplicate Risk: <span id="dup_risk">0</span>%</p>
+
+<div id="patientInfo" class="patient-box" style="display:none">
+
+<h4>Patient Details</h4>
+
+<p><b>Name:</b> <span id="pname"></span></p>
+<p><b>DOB:</b> <span id="pdob"></span></p>
+<p><b>Phone:</b> <span id="pphone"></span></p>
+<p><b>Email:</b> <span id="pemail"></span></p>
+
+</div>
+
+<div id="medicalSummary" class="patient-box" style="display:none">
+
+<h4>Medical Summary</h4>
+
+<p><b>Chief Complaint:</b> <span id="ms_cc"></span></p>
+<p><b>Diagnosis:</b> <span id="ms_dx"></span></p>
+<p><b>Medications:</b> <span id="ms_meds"></span></p>
+<p><b>Recommended Action:</b> <span id="ms_action"></span></p>
+
+</div>
+
+<div id="medicalSummary" class="patient-box" style="display:none">
+
+<h4>Medical Summary</h4>
+
+<p><b>Chief Complaint:</b> <span id="ms_cc"></span></p>
+<p><b>Diagnosis:</b> <span id="ms_dx"></span></p>
+<p><b>Medications:</b> <span id="ms_meds"></span></p>
+<p><b>Recommended Action:</b> <span id="ms_action"></span></p>
+
+</div>
+
+<button onclick="viewTimeline()">View Patient Timeline</button>
+
+</div>
+
+</div>
+
+<script>
+
+let patientId=null
+
+window.onload=function(){
+
+fetch("/extract_text",{
+method:"POST",
+credentials:"include"
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.status==="success"){
+
+document.getElementById("ocrText").value=data.extracted_text
+
+document.getElementById("status").innerHTML=
+"Match Confidence: "+data.match_confidence+"%"
+
+patientId=data.patient_id
+
+// Document type
+document.getElementById("doc_type").innerText=
+data.document_type || "Unknown"
+
+// Confidence scores
+document.getElementById("ocr_conf").innerText=
+data.ocr_confidence || 0
+
+document.getElementById("extract_conf").innerText=
+data.extraction_confidence || 0
+
+document.getElementById("dup_risk").innerText=
+data.duplicate_risk || 0
+
+
+if(data.patient_data){
+
+document.getElementById("patientInfo").style.display="block"
+
+let p=data.patient_data
+
+document.getElementById("pname").innerText=
+(p.first_name||"")+" "+(p.last_name||"")
+
+document.getElementById("pdob").innerText=p.date_of_birth||"Unknown"
+
+document.getElementById("pphone").innerText=p.phone_number||"Unknown"
+
+document.getElementById("pemail").innerText=p.email||"Unknown"
+
+}
+
+if(data.medical_summary){
+  document.getElementById("medicalSummary").style.display="block"
+  let ms=data.medical_summary
+  document.getElementById("ms_cc").innerText=ms.chief_complaint||"None"
+  document.getElementById("ms_dx").innerText=ms.diagnosis||"None"
+  document.getElementById("ms_meds").innerText=ms.medications||"None"
+  document.getElementById("ms_action").innerText=ms.recommended_action||"None"
+}
+
+}else{
+
+document.getElementById("ocrText").value="OCR failed"
+
+document.getElementById("status").innerText="Processing failed"
+
+}
+
+})
+
+.catch(err=>{
+
+console.log(err)
+
+document.getElementById("ocrText").value="Error running OCR"
+
+document.getElementById("status").innerText="Server error"
+
+})
+
+}
+
+
+function viewTimeline(){
+
+if(!patientId){
+
+alert("Patient not detected")
+
+return
+
+}
+
+window.location.href="/patient_timeline/"+patientId
+
+}
+
+</script>
+
+</body>
+
+</html>

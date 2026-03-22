@@ -1,0 +1,264 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hospital Staff Login</title>
+
+<style>
+
+body{
+font-family:'Segoe UI',Arial;
+background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+overflow:hidden;
+}
+
+#particles{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:0;
+}
+
+.login-box{
+position:relative;
+z-index:1;
+background:white;
+padding:40px;
+border-radius:15px;
+width:380px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+color:#2c3e50;
+}
+
+input{
+width:93%;
+padding:12px;
+margin:12px 0;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:14px;
+}
+
+button{
+width:100%;
+padding:12px;
+background:linear-gradient(135deg,#74ebd5,#3498db);
+border:none;
+border-radius:8px;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.error{
+color:red;
+text-align:center;
+margin-top:15px;
+}
+
+.spinner{
+border:3px solid #f3f3f3;
+border-top:3px solid #3498db;
+border-radius:50%;
+width:18px;
+height:18px;
+animation:spin 1s linear infinite;
+margin:auto;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="login-box">
+
+<h2>Hospital Staff Login</h2>
+
+<input type="text" id="employee_id" placeholder="Employee ID">
+
+<input type="password" id="password" placeholder="Password">
+
+<button id="loginBtn" onclick="login()">Login</button>
+
+<p class="error" id="error"></p>
+
+</div>
+
+<script>
+
+/* PARTICLES BACKGROUND */
+
+const canvas=document.getElementById("particles")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+let particles=[]
+
+class Particle{
+
+constructor(x,y,size,sx,sy,color){
+this.x=x
+this.y=y
+this.size=size
+this.sx=sx
+this.sy=sy
+this.color=color
+}
+
+update(){
+
+this.x+=this.sx
+this.y+=this.sy
+
+if(this.x<0||this.x>canvas.width) this.sx*=-1
+if(this.y<0||this.y>canvas.height) this.sy*=-1
+
+}
+
+draw(){
+
+ctx.fillStyle=this.color
+ctx.beginPath()
+ctx.arc(this.x,this.y,this.size,0,Math.PI*2)
+ctx.fill()
+
+}
+
+}
+
+function init(){
+
+particles=[]
+
+for(let i=0;i<100;i++){
+
+let x=Math.random()*canvas.width
+let y=Math.random()*canvas.height
+let size=Math.random()*4+2
+let sx=Math.random()*1-0.5
+let sy=Math.random()*1-0.5
+
+let colors=[
+"rgba(116,235,213,0.8)",
+"rgba(52,152,219,0.8)",
+"rgba(255,255,255,0.7)"
+]
+
+let color=colors[Math.floor(Math.random()*colors.length)]
+
+particles.push(new Particle(x,y,size,sx,sy,color))
+
+}
+
+}
+
+function animate(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+particles.forEach(p=>{
+p.update()
+p.draw()
+})
+
+requestAnimationFrame(animate)
+
+}
+
+init()
+animate()
+
+window.addEventListener("resize",()=>{
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+init()
+})
+
+
+/* LOGIN */
+
+function login(){
+
+const emp=document.getElementById("employee_id").value
+const pass=document.getElementById("password").value
+const btn=document.getElementById("loginBtn")
+
+if(!emp||!pass){
+
+document.getElementById("error").innerText="Enter Employee ID and Password"
+return
+
+}
+
+btn.disabled=true
+btn.innerHTML='<div class="spinner"></div>'
+
+fetch("/api/login",{
+
+method:"POST",
+credentials:"include",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+employee_id:emp,
+password:pass
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.status==="success"){
+
+window.location.href="/dashboard"
+
+}else{
+
+throw new Error()
+
+}
+
+})
+
+.catch(()=>{
+
+document.getElementById("error").innerText="Invalid Employee ID or Password"
+
+btn.disabled=false
+btn.innerText="Login"
+
+})
+
+}
+
+</script>
+
+</body>
+</html>

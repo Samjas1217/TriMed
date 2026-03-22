@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TriMed Patient Linking</title>
+
+<style>
+
+body{
+font-family:'Segoe UI';
+background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+min-height:100vh;
+margin:0;
+display:flex;
+flex-direction:column;
+}
+
+header{
+background:linear-gradient(135deg,#2c5364,#203a43);
+color:white;
+padding:20px 40px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.main{
+flex:1;
+display:flex;
+padding:40px;
+gap:30px;
+}
+
+.left-panel{
+flex:0.8;
+display:flex;
+flex-direction:column;
+gap:20px;
+}
+
+.upload-card, .search-card{
+background:white;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+padding:25px;
+}
+
+.right-panel{
+flex:1.2;
+background:white;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.preview{
+display:none;
+text-align:center;
+}
+
+.preview img{
+max-width:100%;
+max-height:500px;
+border-radius:10px;
+}
+
+button{
+padding:12px 25px;
+border:none;
+background:#2c5364;
+color:white;
+border-radius:10px;
+cursor:pointer;
+}
+
+#proceedBtn{
+margin-top:20px;
+display:none;
+background:#27ae60;
+}
+
+.search-results {
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-item {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.search-item h4 {
+  margin: 0 0 10px 0;
+  color: #0a66c2;
+}
+
+.search-item p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>TriMed Patient Linking</h1>
+<div>
+<a href="/">Dashboard</a>
+<a href="#" onclick="logout()">Logout</a>
+</div>
+</header>
+
+<div class="main">
+
+<div class="left-panel">
+
+<div class="upload-card">
+  <h2>Upload Fax PDF</h2>
+
+  <form id="uploadForm">
+  <input type="file" id="pdfFile" accept=".pdf">
+  <br><br>
+  <button type="submit">Upload</button>
+  </form>
+
+  <div id="status"></div>
+
+  <button id="proceedBtn" onclick="goToOCR()">Run OCR</button>
+</div>
+
+<div class="search-card">
+  <h2>AI Document Search</h2>
+  <div class="search-box">
+    <input type="text" id="aiSearchQuery" placeholder="e.g. Show lab reports for Sanjay Gupta">
+    <button onclick="runDocumentSearch()">Search</button>
+  </div>
+  <div id="searchResults" class="search-results"></div>
+</div>
+
+</div>
+
+<div class="right-panel">
+
+<div class="preview" id="preview">
+<img id="faxImage">
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+document.getElementById("uploadForm").addEventListener("submit",function(e){
+
+e.preventDefault()
+
+const file=document.getElementById("pdfFile").files[0]
+
+if(!file){
+alert("Please select PDF")
+return
+}
+
+let data=new FormData()
+
+data.append("fax",file)
+
+fetch("/upload",{
+method:"POST",
+body:data
+})
+
+.then(r=>r.json())
+
+.then(d=>{
+
+document.getElementById("status").innerText="Upload successful"
+
+document.getElementById("preview").style.display="block"
+
+document.getElementById("faxImage").src="/processed/"+d.image_filename
+
+document.getElementById("proceedBtn").style.display="block"
+
+})
+
+.catch(()=>{
+
+document.getElementById("status").innerText="Upload failed"
+
+})
+
+})
+
+
+function goToOCR(){
+
+window.location.href="/text_extraction"
+
+}
+
+
+function logout(){
+
+fetch("/logout",{
+method:"POST",
+credentials:"include"
+})
+.then(()=>{
+
+window.location.href="/login"
+
+})
+
+}
+
+function runDocumentSearch() {
+  const query = document.getElementById("aiSearchQuery").value;
+  const resultsDiv = document.getElementById("searchResults");
+  if (!query) return;
+
+  resultsDiv.innerHTML = "<p><i>Searching AI...</i></p>";
+
+  fetch("/api/document_search", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: query })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(!data.documents || data.documents.length === 0){
+       resultsDiv.innerHTML = "<p>No documents found.</p>";
+       return;
+    }
+    
+    let html = "";
+    data.documents.forEach(doc => {
+       const date = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Unknown date';
+       const type = doc.document_type || "Unknown Type";
+       // truncate ocr
+       const snippet = doc.ocr_text ? doc.ocr_text.substring(0, 100) + "..." : "No text";
+       
+       html += `
+       <div class="search-item" style="cursor: pointer;" onclick="window.location.href='/patient_timeline/${doc.matched_patient_id}'">
+         <h4>${type}</h4>
+         <p><b>Date:</b> ${date}</p>
+         <p>${snippet}</p>
+       </div>
+       `;
+    });
+    resultsDiv.innerHTML = html;
+  })
+  .catch((e) => {
+     console.error(e);
+     resultsDiv.innerHTML = "<p style='color:red;'>Search failed.</p>";
+  });
+}
+
+</script>
+
+</body>
+</html>

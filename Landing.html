@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Trimed Technologies | AI Fax Patient Linking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:#f4f8fb;
+color:#333;
+}
+
+/* NAVBAR */
+
+nav{
+background:white;
+padding:15px 50px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+nav h1{
+color:#0a66c2;
+font-size:22px;
+}
+
+.buttons button{
+margin-left:10px;
+padding:10px 18px;
+border:none;
+cursor:pointer;
+border-radius:6px;
+font-weight:bold;
+transition:0.2s;
+}
+
+.login-btn{
+background:#0a66c2;
+color:white;
+}
+
+.admin-btn{
+background:#16a085;
+color:white;
+}
+
+.buttons button:hover{
+opacity:0.9;
+transform:translateY(-1px);
+}
+
+/* HERO */
+
+.hero{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:80px 10%;
+background:linear-gradient(to right,#e3f2fd,#ffffff);
+}
+
+.hero-text{
+width:50%;
+}
+
+.hero-text h2{
+font-size:40px;
+margin-bottom:20px;
+color:#0a66c2;
+}
+
+.hero-text p{
+font-size:18px;
+margin-bottom:25px;
+line-height:1.6;
+}
+
+.hero-text button{
+padding:14px 30px;
+background:#0a66c2;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.hero-text button:hover{
+background:#084c99;
+}
+
+.hero img{
+width:45%;
+border-radius:10px;
+box-shadow:0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* SECTIONS */
+
+section{
+padding:60px 10%;
+text-align:center;
+}
+
+section h2{
+margin-bottom:20px;
+color:#0a66c2;
+}
+
+.features{
+display:flex;
+justify-content:space-around;
+margin-top:40px;
+gap:20px;
+}
+
+.feature-box{
+width:30%;
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0px 0px 15px rgba(0,0,0,0.05);
+transition:0.2s;
+}
+
+.feature-box:hover{
+transform:translateY(-5px);
+}
+
+.feature-box img{
+width:80px;
+margin-bottom:15px;
+}
+
+/* FOOTER */
+
+footer{
+background:#0a66c2;
+color:white;
+text-align:center;
+padding:20px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+.hero{
+flex-direction:column;
+text-align:center;
+}
+
+.hero-text,
+.hero img{
+width:100%;
+}
+
+.features{
+flex-direction:column;
+}
+
+.feature-box{
+width:100%;
+margin-bottom:20px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav>
+
+<h1>Trimed Technologies</h1>
+
+<div class="buttons">
+
+<button class="login-btn" onclick="goToLogin()">Staff Login</button>
+
+<button class="admin-btn" onclick="goToAdmin()">Admin</button>
+
+</div>
+
+</nav>
+
+<!-- HERO -->
+
+<div class="hero">
+
+<div class="hero-text">
+
+<h2>AI-Powered Patient Fax Linking</h2>
+
+<p>
+Automatically extract patient information from inbound fax documents
+using OCR and AI. Link medical records to the correct patient instantly
+and eliminate manual data entry errors.
+</p>
+
+<button onclick="goToLogin()">Access System</button>
+
+</div>
+
+<img src="https://www.news-medical.net/images/Article_Images/ImageForArticle_24532_17066301121638048.jpg">
+
+</div>
+
+<!-- ABOUT -->
+
+<section>
+
+<h2>About Trimed Technologies</h2>
+
+<p>
+Trimed Technologies builds intelligent healthcare automation systems.
+Our solutions combine Artificial Intelligence, document processing,
+and secure medical data handling to modernize hospital workflows.
+</p>
+
+</section>
+
+<!-- SERVICES -->
+
+<section style="background:#e3f2fd;">
+
+<h2>What This System Does</h2>
+
+<p>
+This platform processes incoming fax documents, extracts patient
+information automatically, and links the documents to the correct
+patient records in the hospital database.
+</p>
+
+</section>
+
+<!-- FEATURES -->
+
+<section>
+
+<h2>Core Features</h2>
+
+<div class="features">
+
+<div class="feature-box">
+
+<img src="https://cdn-icons-png.flaticon.com/512/2913/2913108.png">
+
+<h3>AI OCR Processing</h3>
+
+<p>Extracts patient details automatically from fax documents.</p>
+
+</div>
+
+<div class="feature-box">
+
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
+<h3>Smart Patient Matching</h3>
+
+<p>Matches extracted information with existing patient records.</p>
+
+</div>
+
+<div class="feature-box">
+
+<img src="https://cdn-icons-png.flaticon.com/512/3063/3063822.png">
+
+<h3>Secure Access</h3>
+
+<p>Role-based login system for staff and administrators.</p>
+
+</div>
+
+</div>
+
+</section>
+
+<footer>
+
+© 2026 Trimed Technologies | Healthcare AI Solutions
+
+</footer>
+
+<script>
+
+function goToLogin(){
+
+window.location.href="/login"
+
+}
+
+function goToAdmin(){
+
+window.location.href="/adminlogin"
+
+}
+
+</script>
+
+</body>
+</html>
